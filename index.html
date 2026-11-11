@@ -1,0 +1,565 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DRAGON RUN</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 15px;
+    background: #f0f4f8;
+    font-family: Arial, sans-serif;
+}
+
+.juego {
+    width: 100%;
+    max-width: 900px;
+    background: white;
+    border-radius: 18px;
+    padding: 22px;
+    box-shadow: 0 10px 35px #0002;
+}
+
+h1 {
+    text-align: center;
+    color: #202c40;
+    margin-bottom: 8px;
+    font-size: 32px;
+}
+
+.descripcion {
+    text-align: center;
+    color: #778196;
+    margin-bottom: 22px;
+}
+
+.puntuaciones {
+    display: flex;
+    justify-content: flex-end;
+    gap: 25px;
+    margin-bottom: 12px;
+    font-weight: bold;
+    color: #26364c;
+}
+
+#game {
+    position: relative;
+    width: 100%;
+    height: 280px;
+    overflow: hidden;
+    background: linear-gradient(#c9edff, #f5fbff);
+    border: 2px solid #d7e2ed;
+    border-radius: 12px;
+    touch-action: manipulation;
+}
+
+.nube {
+    position: absolute;
+    font-size: 35px;
+    opacity: .8;
+    animation: nube 12s linear infinite;
+}
+
+.nube1 {
+    top: 35px;
+    left: 80%;
+}
+
+.nube2 {
+    top: 85px;
+    left: 40%;
+    animation-delay: -5s;
+}
+
+@keyframes nube {
+    from { transform: translateX(100px); }
+    to { transform: translateX(-900px); }
+}
+
+#dragon {
+    position: absolute;
+    bottom: 35px;
+    left: 65px;
+    font-size: 55px;
+    width: 65px;
+    height: 65px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+    user-select: none;
+}
+
+#dragon.corriendo {
+    animation: correr .18s infinite alternate;
+}
+
+@keyframes correr {
+    from { transform: rotate(-5deg) translateY(0); }
+    to { transform: rotate(5deg) translateY(-3px); }
+}
+
+.suelo {
+    position: absolute;
+    bottom: 35px;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: #526b49;
+}
+
+#obstaculos {
+    position: absolute;
+    inset: 0;
+}
+
+.obstaculo {
+    position: absolute;
+    bottom: 35px;
+    font-size: 38px;
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+}
+
+.info {
+    text-align: center;
+    margin-top: 18px;
+    color: #687386;
+    line-height: 1.8;
+}
+
+.botones {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 18px;
+    flex-wrap: wrap;
+}
+
+button {
+    border: none;
+    padding: 13px 25px;
+    border-radius: 9px;
+    background: #2563eb;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: .2s;
+}
+
+button:hover {
+    transform: translateY(-2px);
+    filter: brightness(.9);
+}
+
+#saltarBtn {
+    background: #16a34a;
+}
+
+#mensaje {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    background: #ffffffdb;
+    z-index: 10;
+    text-align: center;
+    gap: 12px;
+}
+
+#mensaje h2 {
+    font-size: 28px;
+    color: #172c48;
+}
+
+#mensaje p {
+    color: #475569;
+}
+
+.oculto {
+    display: none !important;
+}
+
+@media(max-width:500px) {
+    #game {
+        height: 240px;
+    }
+
+    #dragon {
+        left: 25px;
+    }
+
+    .puntuaciones {
+        font-size: 13px;
+        gap: 15px;
+    }
+
+    h1 {
+        font-size: 26px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="juego">
+
+    <h1>🐉 DRAGON RUN</h1>
+
+    <p class="descripcion">
+        ¡Corre, salta y esquiva todos los obstáculos!
+    </p>
+
+    <div class="puntuaciones">
+        <span>PUNTOS: <span id="score">0</span></span>
+        <span>RÉCORD: <span id="record">0</span></span>
+    </div>
+
+    <div id="game">
+
+        <div class="nube nube1">☁️</div>
+        <div class="nube nube2">☁️</div>
+
+        <div id="dragon">🐉</div>
+
+        <div id="obstaculos"></div>
+
+        <div class="suelo"></div>
+
+        <div id="mensaje">
+            <h2>🐉 DRAGON RUN</h2>
+            <p>¡Prepárate para la aventura!</p>
+            <button id="jugarBtn">▶ JUGAR</button>
+        </div>
+
+    </div>
+
+    <div class="info">
+        Presiona <b>ESPACIO</b> o <b>↑</b> para saltar.<br>
+        También puedes tocar la pantalla o utilizar el botón SALTAR.
+    </div>
+
+    <div class="botones">
+        <button id="saltarBtn">⬆ SALTAR</button>
+        <button id="reiniciarBtn">🔄 REINICIAR</button>
+    </div>
+
+</div>
+
+<script>
+// ELEMENTOS
+const dragon = document.getElementById("dragon");
+const game = document.getElementById("game");
+const obstaculosContainer = document.getElementById("obstaculos");
+const scoreText = document.getElementById("score");
+const recordText = document.getElementById("record");
+const mensaje = document.getElementById("mensaje");
+
+const jugarBtn = document.getElementById("jugarBtn");
+const saltarBtn = document.getElementById("saltarBtn");
+const reiniciarBtn = document.getElementById("reiniciarBtn");
+
+// VARIABLES
+let puntos = 0;
+let record = 0;
+let velocidad = 5;
+let jugando = false;
+let saltando = false;
+let posicionY = 0;
+let velocidadY = 0;
+let gravedad = 0.65;
+let obstaculos = [];
+let contador = 0;
+let siguienteObstaculo = 100;
+let animacion = null;
+let ultimoTiempo = 0;
+
+// CARGAR RÉCORD
+try {
+    record = Number(localStorage.getItem("dragonRecord")) || 0;
+} catch (e) {
+    record = 0;
+}
+
+recordText.textContent = record;
+
+// INICIAR JUEGO
+function iniciar() {
+
+    if (jugando) return;
+
+    puntos = 0;
+    velocidad = 5;
+    contador = 0;
+    siguienteObstaculo = 100;
+
+    limpiarObstaculos();
+
+    posicionY = 0;
+    velocidadY = 0;
+    saltando = false;
+
+    dragon.style.bottom = "35px";
+    dragon.classList.add("corriendo");
+
+    scoreText.textContent = "0";
+
+    mensaje.classList.add("oculto");
+
+    jugando = true;
+    ultimoTiempo = performance.now();
+
+    cancelAnimationFrame(animacion);
+    animacion = requestAnimationFrame(actualizar);
+}
+
+// SALTAR
+function saltar() {
+
+    if (!jugando || saltando) return;
+
+    saltando = true;
+    velocidadY = 13;
+    dragon.classList.remove("corriendo");
+}
+
+// MOVIMIENTO DEL DRAGÓN
+function actualizarDragon(delta) {
+
+    if (saltando || posicionY > 0) {
+
+        posicionY += velocidadY * delta;
+        velocidadY -= gravedad * delta;
+
+        if (posicionY <= 0) {
+            posicionY = 0;
+            velocidadY = 0;
+            saltando = false;
+        }
+
+        dragon.style.bottom = (35 + posicionY) + "px";
+    }
+
+    if (!saltando && posicionY === 0) {
+        dragon.classList.add("corriendo");
+    }
+}
+
+// CREAR OBSTÁCULOS
+function crearObstaculo() {
+
+    const elemento = document.createElement("div");
+
+    elemento.className = "obstaculo";
+
+    const tipos = ["🌵", "🪨", "🌳", "🌵"];
+
+    elemento.textContent =
+        tipos[Math.floor(Math.random() * tipos.length)];
+
+    obstaculosContainer.appendChild(elemento);
+
+    obstaculos.push({
+        elemento: elemento,
+        x: game.clientWidth
+    });
+}
+
+// COLISIONES
+function detectarColision(obstaculo) {
+
+    const dragonRect = dragon.getBoundingClientRect();
+    const obstaculoRect = obstaculo.elemento.getBoundingClientRect();
+
+    const margen = 9;
+
+    return (
+        dragonRect.right - margen > obstaculoRect.left + margen &&
+        dragonRect.left + margen < obstaculoRect.right - margen &&
+        dragonRect.bottom - margen > obstaculoRect.top + margen &&
+        dragonRect.top + margen < obstaculoRect.bottom - margen
+    );
+}
+
+// ACTUALIZAR JUEGO
+function actualizar(tiempo) {
+
+    if (!jugando) return;
+
+    let delta = (tiempo - ultimoTiempo) / 16.67;
+    delta = Math.min(delta, 2);
+    ultimoTiempo = tiempo;
+
+    contador += delta;
+
+    // PUNTUACIÓN
+    puntos += delta * 0.5;
+    scoreText.textContent = Math.floor(puntos);
+
+    // VELOCIDAD PROGRESIVA
+    velocidad = 5 + Math.min(puntos / 100, 9);
+
+    // SALTO
+    actualizarDragon(delta);
+
+    // CREAR OBSTÁCULOS
+    if (contador >= siguienteObstaculo) {
+        crearObstaculo();
+
+        siguienteObstaculo =
+            contador + 85 + Math.random() * 55;
+    }
+
+    // MOVER OBSTÁCULOS
+    for (let i = obstaculos.length - 1; i >= 0; i--) {
+
+        const o = obstaculos[i];
+
+        o.x -= velocidad * delta;
+
+        o.elemento.style.left = o.x + "px";
+
+        // DETECTAR COLISIÓN
+        if (detectarColision(o)) {
+            terminar();
+            return;
+        }
+
+        // ELIMINAR OBSTÁCULOS
+        if (o.x < -60) {
+            o.elemento.remove();
+            obstaculos.splice(i, 1);
+        }
+    }
+
+    animacion = requestAnimationFrame(actualizar);
+}
+
+// LIMPIAR OBSTÁCULOS
+function limpiarObstaculos() {
+
+    obstaculos.forEach(o => o.elemento.remove());
+    obstaculos = [];
+}
+
+// FIN DEL JUEGO
+function terminar() {
+
+    jugando = false;
+
+    cancelAnimationFrame(animacion);
+
+    dragon.classList.remove("corriendo");
+
+    const puntuacionFinal = Math.floor(puntos);
+
+    if (puntuacionFinal > record) {
+
+        record = puntuacionFinal;
+
+        try {
+            localStorage.setItem("dragonRecord", record);
+        } catch (e) {}
+
+        recordText.textContent = record;
+    }
+
+    mensaje.innerHTML = `
+        <h2>💥 ¡GAME OVER!</h2>
+        <p>Tu puntuación: <b>${puntuacionFinal}</b></p>
+        <p>Récord máximo: <b>${record}</b></p>
+        <button id="volverBtn">🔄 VOLVER A JUGAR</button>
+    `;
+
+    mensaje.classList.remove("oculto");
+
+    document.getElementById("volverBtn")
+        .addEventListener("click", iniciar);
+}
+
+// REINICIAR
+function reiniciar() {
+
+    cancelAnimationFrame(animacion);
+
+    jugando = false;
+    saltando = false;
+    posicionY = 0;
+    velocidadY = 0;
+    puntos = 0;
+
+    limpiarObstaculos();
+
+    dragon.style.bottom = "35px";
+    dragon.classList.remove("corriendo");
+
+    scoreText.textContent = "0";
+
+    mensaje.innerHTML = `
+        <h2>🐉 DRAGON RUN</h2>
+        <p>¡Prepárate para la aventura!</p>
+        <button id="jugarBtnNuevo">▶ JUGAR</button>
+    `;
+
+    mensaje.classList.remove("oculto");
+
+    document.getElementById("jugarBtnNuevo")
+        .addEventListener("click", iniciar);
+}
+
+// TECLADO
+document.addEventListener("keydown", function(e) {
+
+    if (e.code === "Space" || e.code === "ArrowUp") {
+
+        e.preventDefault();
+
+        if (!jugando) {
+            iniciar();
+        } else {
+            saltar();
+        }
+    }
+});
+
+// CONTROLES
+jugarBtn.addEventListener("click", iniciar);
+saltarBtn.addEventListener("click", saltar);
+reiniciarBtn.addEventListener("click", reiniciar);
+
+// CONTROL TÁCTIL
+game.addEventListener("pointerdown", function(e) {
+
+    if (e.target.closest("button")) return;
+
+    if (!jugando) {
+        iniciar();
+    } else {
+        saltar();
+    }
+});
+
+</script>
+
+</body>
+</html>
